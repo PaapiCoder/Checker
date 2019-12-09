@@ -16,36 +16,51 @@ import javafx.stage.Stage;
  * @author Jatinder Pandey
  */
 public class Checkers extends Application {
-    public static final int TILE_SIZE = 90;
-    private static final int HEIGHT = 8;
-    private static final int WIDTH = 8;
-    private  Tile[][] board = new Tile[WIDTH][HEIGHT];
+    public static final int TILE_SIZE = 80;
+    private static final int NO_OF_TILES = 8;
+    private  Tile[][] board = new Tile[NO_OF_TILES][NO_OF_TILES];
     private Group tileGroup = new Group();
-    private Group pieceGroup = new Group();
+    private Group discsGroup = new Group();
 
     private Parent createChecker(){
         Pane layout = new Pane();
-        layout.setPrefSize(HEIGHT* TILE_SIZE,WIDTH* TILE_SIZE);
-        layout.getChildren().addAll(tileGroup,pieceGroup);
-        for (int y = 0; y < HEIGHT; y++){
-            for (int x = 0; x < WIDTH; x++){
+        layout.getChildren().addAll(tileGroup,discsGroup);
+        for (int y = 0; y < NO_OF_TILES; y++){
+            for (int x = 0; x < NO_OF_TILES; x++){
                 Tile tile = new Tile((x+y)%2==0, x,y);
                 board[x][y] = tile;
                 tileGroup.getChildren().add(tile);
+            }
+        }
+        placeDiscs();
+        return layout;
+    }
+
+    private void placeDiscs(){
+        for (int y = 0; y < NO_OF_TILES; y++){
+            for (int x = 0; x < NO_OF_TILES; x++) {
                 Discs discs = null;
-                if(y<=2 && (x+y)%2!=0){
-                    discs = createDiscs(DiscsType.DARK,x,y);
+                if (y <= 2 && (x + y) % 2 != 0) {
+                    discs = createDiscs(DiscsType.DARK, x, y);
                 }
-                if(y>=5 && (x+y)%2!=0){
-                    discs = createDiscs(DiscsType.LIGHT,x,y);
+                if (y >= 5 && (x + y) % 2 != 0) {
+                    discs = createDiscs(DiscsType.LIGHT, x, y);
                 }
-                if(discs !=null) {
-                    tile.setDiscs(discs);
-                    pieceGroup.getChildren().add(discs);
+                if (discs != null) {
+                    board[x][y].setDiscs(discs);
+                    discsGroup.getChildren().add(discs);
                 }
             }
         }
-        return layout;
+    }
+
+    private void clearBoard(){
+        for (int y = 0; y < NO_OF_TILES; y++) {
+            for (int x = 0; x < NO_OF_TILES; x++) {
+                board[x][y].setDiscs(null);
+                discsGroup.getChildren().clear();
+            }
+        }
     }
 
     private MoveResult tryMove(Discs discs, int newX, int newY){
@@ -76,7 +91,7 @@ public class Checkers extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Scene scene = new Scene(new VBox(), WIDTH*TILE_SIZE, HEIGHT*TILE_SIZE*1.04);
+        Scene scene = new Scene(new VBox(), NO_OF_TILES*TILE_SIZE, NO_OF_TILES*TILE_SIZE*1.04);
         ((VBox) scene.getRoot()).getChildren().addAll(createMenuBar(), createChecker());
         primaryStage.setScene(scene);
         primaryStage.setTitle("Checker");
@@ -106,7 +121,7 @@ public class Checkers extends Application {
                     board[newX][newY].setDiscs(discs);
                     Discs otherDiscs = result.getDiscs();
                     board[toBoard(otherDiscs.getPreX())][toBoard(otherDiscs.getPreY())].setDiscs(null);
-                    pieceGroup.getChildren().remove(otherDiscs);
+                    discsGroup.getChildren().remove(otherDiscs);
                     break;
             }
         });
@@ -120,9 +135,27 @@ public class Checkers extends Application {
     private MenuBar createMenuBar(){
         MenuBar menuBar = new MenuBar();
         Menu menuControl = new Menu("Controls");
-        menuControl.getItems().addAll(exitGame());
+        menuControl.getItems().addAll(newGame(),resetGame(),exitGame());
         menuBar.getMenus().addAll(menuControl);
         return  menuBar;
+    }
+
+    private MenuItem newGame(){
+        MenuItem exit = new MenuItem("New Game");
+        exit.setOnAction(t -> {
+            clearBoard();
+            placeDiscs();
+        });
+        return exit;
+    }
+
+    private MenuItem resetGame(){
+        MenuItem exit = new MenuItem("Reset");
+        exit.setOnAction(t -> {
+            clearBoard();
+            placeDiscs();
+        });
+        return exit;
     }
 
     private MenuItem exitGame(){
